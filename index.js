@@ -8,7 +8,7 @@ var app = express();
 // enable CORS (https://en.wikipedia.org/wiki/Cross-origin_resource_sharing)
 // so that your API is remotely testable by FCC 
 var cors = require('cors');
-app.use(cors({optionsSuccessStatus: 200}));  // some legacy browsers choke on 204
+app.use(cors({ optionsSuccessStatus: 200 }));  // some legacy browsers choke on 204
 
 // http://expressjs.com/en/starter/static-files.html
 app.use(express.static('public'));
@@ -18,32 +18,22 @@ app.get("/", function (req, res) {
   res.sendFile(__dirname + '/views/index.html');
 });
 
-const isValidDate = (date) => date.toUTCString() === "Invalid Date";
+// API endpoint to get the information from headers
+app.get("/api/whoami", function (req, res) {
+  // Get the client's IP address
+  let ipaddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress;
 
-// your first API endpoint... 
-app.get("/api/:date", function (req, res) {
-  let date = new Date(req.params.date);
-  
-  // Try parsing the date as a number (in case it's a Unix timestamp)
-  if (isValidDate(date)) {
-    date = new Date(+req.params.date);
-  }
+  // Get the client's language preference
+  let language = req.headers['accept-language'].split(',')[0];  // take the first language
 
-  if (isValidDate(date)) {
-    res.json({error: "Invalid Date"});
-    return;
-  }
+  // Get the client's software (User-Agent)
+  let software = req.headers['user-agent'];
 
+  // Respond with a JSON object containing the IP address, language, and software
   res.json({
-    unix: date.getTime(),
-    utc: date.toUTCString()
-  });
-});
-
-app.get("/api", (req, res) => {
-  res.json({
-    unix: new Date().getTime(),
-    utc: new Date().toUTCString()
+    ipaddress: ipaddress,
+    language: language,
+    software: software
   });
 });
 
